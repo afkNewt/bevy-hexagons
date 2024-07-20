@@ -91,78 +91,52 @@ pub fn draw_borders(
     colors: Res<HexColors>,
     borders: Query<Entity, With<Border>>,
 ) {
-    let ally_point_group = tile_border(&hexes, Team::Ally);
-    let enemy_point_group = tile_border(&hexes, Team::Enemy);
-
-    let Some(ally_point_group) = ally_point_group else {
-        return;
-    };
-
-    let Some(enemy_point_group) = enemy_point_group else {
-        return;
-    };
-
     for border in &borders {
         commands.entity(border).despawn();
     }
 
-    let first = ally_point_group[0][0];
-    let second = ally_point_group[0][1];
+    for team in [Team::Ally, Team::Enemy] {
+        let Some(point_group) = tile_border(&hexes, team) else {
+            continue;
+        };
 
-    let mut border = MaterialMesh2dBundle {
-        mesh: meshes
-            .add(Rectangle::new(first.distance(second), HEX_GAP * 2.))
-            .into(),
-        material: colors.ally_border_color.clone(),
-        ..default()
-    };
+        let first = point_group[0][0];
+        let second = point_group[0][1];
 
-    for points in ally_point_group {
-        for positions in points.windows(2) {
-            border.transform = Transform {
-                translation: Vec3::new(
-                    (positions[0].x + positions[1].x) / 2.,
-                    (positions[0].y + positions[1].y) / 2.,
-                    BORDER_LAYER,
-                ),
-                rotation: Quat::from_axis_angle(
-                    Vec3::Z,
-                    Vec2::new(
-                        positions[0].x - positions[1].x,
-                        positions[0].y - positions[1].y,
-                    )
-                    .angle_between(Vec2::X)
-                        * -1.,
-                ),
-                ..Default::default()
-            };
+        let mut border = MaterialMesh2dBundle {
+            mesh: meshes
+                .add(Rectangle::new(first.distance(second), HEX_GAP * 2.))
+                .into(),
+            material: match team {
+                Team::Neutral => colors.neutral.clone(),
+                Team::Ally => colors.ally_border_color.clone(),
+                Team::Enemy => colors.enemy_border_color.clone(),
+            },
+            ..default()
+        };
 
-            commands.spawn(border.clone()).insert(Border);
-        }
-    }
+        for points in point_group {
+            for positions in points.windows(2) {
+                border.transform = Transform {
+                    translation: Vec3::new(
+                        (positions[0].x + positions[1].x) / 2.,
+                        (positions[0].y + positions[1].y) / 2.,
+                        BORDER_LAYER,
+                    ),
+                    rotation: Quat::from_axis_angle(
+                        Vec3::Z,
+                        Vec2::new(
+                            positions[0].x - positions[1].x,
+                            positions[0].y - positions[1].y,
+                        )
+                        .angle_between(Vec2::X)
+                            * -1.,
+                    ),
+                    ..Default::default()
+                };
 
-    border.material = colors.enemy_border_color.clone();
-    for points in enemy_point_group {
-        for positions in points.windows(2) {
-            border.transform = Transform {
-                translation: Vec3::new(
-                    (positions[0].x + positions[1].x) / 2.,
-                    (positions[0].y + positions[1].y) / 2.,
-                    BORDER_LAYER,
-                ),
-                rotation: Quat::from_axis_angle(
-                    Vec3::Z,
-                    Vec2::new(
-                        positions[0].x - positions[1].x,
-                        positions[0].y - positions[1].y,
-                    )
-                    .angle_between(Vec2::X)
-                        * -1.,
-                ),
-                ..Default::default()
-            };
-
-            commands.spawn(border.clone()).insert(Border);
+                commands.spawn(border.clone()).insert(Border);
+            }
         }
     }
 }
