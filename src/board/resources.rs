@@ -8,7 +8,6 @@ pub struct HexColors {
     pub neutral_weak_highlight: Handle<ColorMaterial>,
     pub neutral_strong_highlight: Handle<ColorMaterial>,
 
-    
     pub ally_sprite: Color,
     pub ally_unused_action_color: Color,
     pub ally_used_action_color: Color,

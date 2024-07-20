@@ -12,6 +12,8 @@ pub mod components;
 pub mod resources;
 mod systems;
 
+const UNIT_LAYER: f32 = 2.0;
+
 pub struct UnitsPlugin;
 
 impl Plugin for UnitsPlugin {

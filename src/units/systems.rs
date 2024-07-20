@@ -3,11 +3,15 @@ use hexx::{hex, Hex};
 
 const UNIT_SPRITE_SIZE: f32 = HEX_SIZE / 110.;
 
-use crate::{board::{components::Team, resources::HexColors, HEX_SIZE, HEX_LAYOUT}, util::cursor_to_hex};
+use crate::{
+    board::{components::Team, resources::HexColors, HEX_LAYOUT, HEX_SIZE},
+    util::cursor_to_hex,
+};
 
 use super::{
     components::{Action, Unit, UnitDefault},
     resources::SelectedUnit,
+    UNIT_LAYER,
 };
 
 pub fn test_spawn_unit(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -45,7 +49,7 @@ fn spawn_unit(
     commands
         .spawn(SpriteBundle {
             transform: Transform {
-                translation: pixel_pos.extend(1.),
+                translation: Vec3::from_array(pixel_pos.extend(UNIT_LAYER).to_array()),
                 scale: Vec3::splat(UNIT_SPRITE_SIZE),
                 ..Default::default()
             },
@@ -57,7 +61,7 @@ fn spawn_unit(
 
 pub fn check_for_unit_selection(
     windows: Query<&Window>,
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
     mut selected_unit: ResMut<SelectedUnit>,
     units: Query<(&Unit, Entity)>,
 ) {
@@ -96,7 +100,7 @@ pub fn despawn_dead_units(mut commands: Commands, units: Query<(Entity, &Unit)>)
 
 pub fn check_for_unit_movement(
     windows: Query<&Window>,
-    mut buttons: ResMut<Input<MouseButton>>,
+    mut buttons: ResMut<ButtonInput<MouseButton>>,
     selected_unit: Res<SelectedUnit>,
     mut units: Query<(&mut Unit, &mut Transform, Entity)>,
 ) {
@@ -125,12 +129,15 @@ pub fn check_for_unit_movement(
         return;
     }
 
-    if unit.relative_attack_hexes().contains(&hovered_hex) && unit.actions.contains(&Action::Attack) {
-        let pixel_pos = HEX_LAYOUT.hex_to_world_pos(hovered_hex);
+    if unit.relative_attack_hexes().contains(&hovered_hex) && unit.actions.contains(&Action::Attack)
+    {
+        let pixel_pos = Vec2::from_array(HEX_LAYOUT.hex_to_world_pos(hovered_hex).to_array());
 
         let mut enemy_entity = None;
         for (enemy_unit, transform, entity) in &units {
-            if enemy_unit.team == Team::Ally || transform.translation != pixel_pos.extend(1.) {
+            if enemy_unit.team == Team::Ally
+                || transform.translation != pixel_pos.extend(UNIT_LAYER)
+            {
                 continue;
             }
 
@@ -154,7 +161,12 @@ pub fn check_for_unit_movement(
     let unit = units.get(selected_entity).unwrap().0;
 
     if unit.relative_move_hexes().contains(&hovered_hex) && unit.actions.contains(&Action::Move) {
-        let new_position = HEX_LAYOUT.hex_to_world_pos(hovered_hex).extend(1.);
+        let new_position = Vec3::from_array(
+            HEX_LAYOUT
+                .hex_to_world_pos(hovered_hex)
+                .extend(UNIT_LAYER)
+                .to_array(),
+        );
 
         // check if tile is occupied
         for (_unit, transform, _entity) in &units {

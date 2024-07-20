@@ -17,18 +17,22 @@ pub const HEX_RADIUS: i32 = 5;
 
 pub const HEX_LAYOUT: HexLayout = HexLayout {
     orientation: hexx::HexOrientation::Pointy,
-    origin: Vec2::ZERO,
-    hex_size: Vec2::splat(HEX_SIZE + HEX_GAP),
+    origin: hexx::Vec2::ZERO,
+    hex_size: hexx::Vec2::splat(HEX_SIZE + HEX_GAP),
     invert_x: false,
     invert_y: true,
 };
+
+const BACKGROUND_HEX_LAYER: f32 = 0.0;
+const HEX_LAYER: f32 = 1.0;
+const BORDER_LAYER: f32 = 2.0;
 
 pub struct BoardPlugin;
 
 impl Plugin for BoardPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreStartup, load_colors)
-        .add_systems(Startup, build_board)
-        .add_systems(Update, draw_borders);
+            .add_systems(Startup, build_board)
+            .add_systems(Update, draw_borders);
     }
 }

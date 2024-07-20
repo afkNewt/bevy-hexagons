@@ -5,15 +5,16 @@ use crate::{
     board::{
         components::{HexTile, Team},
         resources::HexColors,
-        HEX_RADIUS, HEX_SIZE, HEX_LAYOUT,
+        HEX_LAYOUT, HEX_RADIUS, HEX_SIZE,
     },
     units::{
         components::{Action, Unit},
         resources::SelectedUnit,
-    }, util::cursor_to_hex,
+    },
+    util::cursor_to_hex,
 };
 
-use super::components::TilePurposeSprite;
+use super::{components::TilePurposeSprite, OVERLAY_LAYER};
 
 pub fn remove_tile_highlights(
     mut hexes: Query<(&HexTile, &mut Handle<ColorMaterial>)>,
@@ -33,13 +34,10 @@ pub fn highlight_hovered_hex(
         return;
     };
 
-    for (hex, mut color_mat) in &mut hexes {
-        if hex.coordinate != hovered_hex {
-            continue;
-        }
+    let hovered = hexes.iter_mut().find(|(h, _)| h.coordinate == hovered_hex);
 
+    if let Some((hex, mut color_mat)) = hovered {
         *color_mat = hex.strong_highlight(&colors);
-        break;
     }
 }
 
@@ -113,13 +111,17 @@ pub fn spawn_tile_purpose_sprites(
 
         let transform = if both.contains(&hex) {
             Transform {
-                translation: Vec3::new(pixel_position.x + HEX_SIZE / 3., pixel_position.y, 2.),
+                translation: Vec3::new(
+                    pixel_position.x + HEX_SIZE / 3.,
+                    pixel_position.y,
+                    OVERLAY_LAYER,
+                ),
                 scale: Vec3::splat(HEX_SIZE / 220.),
                 ..Default::default()
             }
         } else {
             Transform {
-                translation: pixel_position.extend(2.),
+                translation: Vec3::from_array(pixel_position.extend(OVERLAY_LAYER).to_array()),
                 scale: Vec3::splat(HEX_SIZE / 220.),
                 ..Default::default()
             }
@@ -134,7 +136,7 @@ pub fn spawn_tile_purpose_sprites(
             .insert(TilePurposeSprite(Action::Move));
     }
 
-    for hex in unit.relative_attack_hexes () {
+    for hex in unit.relative_attack_hexes() {
         if !valid_hex_tiles.contains(&hex) {
             continue;
         }
@@ -143,13 +145,17 @@ pub fn spawn_tile_purpose_sprites(
 
         let transform = if both.contains(&hex) {
             Transform {
-                translation: Vec3::new(pixel_position.x - HEX_SIZE / 3., pixel_position.y, 2.),
+                translation: Vec3::new(
+                    pixel_position.x - HEX_SIZE / 3.,
+                    pixel_position.y,
+                    OVERLAY_LAYER,
+                ),
                 scale: Vec3::splat(HEX_SIZE / 220.),
                 ..Default::default()
             }
         } else {
             Transform {
-                translation: pixel_position.extend(2.),
+                translation: Vec3::from_array(pixel_position.extend(OVERLAY_LAYER).to_array()),
                 scale: Vec3::splat(HEX_SIZE / 220.),
                 ..Default::default()
             }

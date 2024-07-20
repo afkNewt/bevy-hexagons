@@ -7,6 +7,9 @@ use self::systems::{
 
 mod components;
 mod systems;
+
+const OVERLAY_LAYER: f32 = 3.0;
+
 pub struct TileHighlighting;
 
 impl Plugin for TileHighlighting {

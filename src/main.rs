@@ -18,7 +18,7 @@ pub mod units;
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(Color::rgb_u8(20, 20, 20)))
+        .insert_resource(ClearColor(Color::srgb_u8(20, 20, 20)))
         .add_plugins(DefaultPlugins)
         .add_plugins((
             BoardPlugin,

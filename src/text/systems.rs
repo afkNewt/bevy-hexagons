@@ -5,6 +5,11 @@ use crate::{board::components::HexTile, player::resources::PlayerCoins, util::cu
 use super::components::{CoinText, TileText};
 
 pub fn generate_tile_info_text(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let shiny_color = Color::srgb(
+        bevy::color::palettes::css::GOLD.red,
+        bevy::color::palettes::css::GOLD.green,
+        bevy::color::palettes::css::GOLD.blue,
+    );
     commands.spawn((
         // Create a TextBundle that has a Text with a list of sections.
         TextBundle::from_sections([
@@ -19,7 +24,7 @@ pub fn generate_tile_info_text(mut commands: Commands, asset_server: Res<AssetSe
             TextSection::from_style(TextStyle {
                 font: asset_server.load("fonts/arial.ttf"),
                 font_size: 40.0,
-                color: Color::GOLD,
+                color: shiny_color,
             }),
             TextSection::new(
                 "\nCapture: ",
@@ -32,7 +37,7 @@ pub fn generate_tile_info_text(mut commands: Commands, asset_server: Res<AssetSe
             TextSection::from_style(TextStyle {
                 font: asset_server.load("fonts/arial.ttf"),
                 font_size: 40.0,
-                color: Color::GOLD,
+                color: shiny_color,
             }),
             TextSection::new(
                 "\nTeam: ",
@@ -45,7 +50,7 @@ pub fn generate_tile_info_text(mut commands: Commands, asset_server: Res<AssetSe
             TextSection::from_style(TextStyle {
                 font: asset_server.load("fonts/arial.ttf"),
                 font_size: 40.0,
-                color: Color::GOLD,
+                color: shiny_color,
             }),
         ]),
         TileText,
@@ -82,11 +87,16 @@ pub fn update_tile_info_text(
 }
 
 pub fn generate_player_coin_text(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let shiny_color = Color::srgb(
+        bevy::color::palettes::css::GOLD.red,
+        bevy::color::palettes::css::GOLD.green,
+        bevy::color::palettes::css::GOLD.blue,
+    );
     commands.spawn((
         // Create a TextBundle that has a Text with a list of sections.
         TextBundle::from_sections([
             TextSection::new(
-                "Coins: ",
+                "\n\n\nCoins: ",
                 TextStyle {
                     font: asset_server.load("fonts/arial.ttf"),
                     font_size: 40.0,
@@ -96,7 +106,7 @@ pub fn generate_player_coin_text(mut commands: Commands, asset_server: Res<Asset
             TextSection::from_style(TextStyle {
                 font: asset_server.load("fonts/arial.ttf"),
                 font_size: 40.0,
-                color: Color::GOLD,
+                color: shiny_color,
             }),
         ]),
         CoinText,

@@ -238,15 +238,26 @@ impl Unit {
         if self.keywords.contains(&Keyword::Nimble) && killed {
             self.position = opponent.position;
 
-            my_transform.translation = HEX_LAYOUT.hex_to_world_pos(self.position).extend(1.);
+            my_transform.translation = Vec3::from_array(
+                HEX_LAYOUT
+                    .hex_to_world_pos(self.position)
+                    .extend(1.)
+                    .to_array(),
+            );
         }
     }
 
     pub fn relative_attack_hexes(&self) -> Vec<Hex> {
-        self.attack_hexes.iter().map(|h| *h + self.position).collect::<Vec<Hex>>()
+        self.attack_hexes
+            .iter()
+            .map(|h| *h + self.position)
+            .collect::<Vec<Hex>>()
     }
 
     pub fn relative_move_hexes(&self) -> Vec<Hex> {
-        self.move_hexes.iter().map(|h| *h + self.position).collect::<Vec<Hex>>()
+        self.move_hexes
+            .iter()
+            .map(|h| *h + self.position)
+            .collect::<Vec<Hex>>()
     }
 }

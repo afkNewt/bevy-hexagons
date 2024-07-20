@@ -1,16 +1,16 @@
 use bevy::prelude::*;
 
-
 use crate::{
     board::components::{HexTile, Team, TileVariant},
-    units::components::Unit, util::cursor_to_hex,
+    units::components::Unit,
+    util::cursor_to_hex,
 };
 
 use super::resources::{AllyCapital, PlayerCoins, TurnCounter};
 
 pub fn place_ally_capital(
     mut ally_capital: ResMut<AllyCapital>,
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
     windows: Query<&Window>,
     mut hexes: Query<&mut HexTile>,
 ) {
@@ -55,7 +55,7 @@ pub fn pass_turn(
     mut player_coin_count: ResMut<PlayerCoins>,
     mut units: Query<&mut Unit>,
     hex_tiles: Query<&mut HexTile>,
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
 ) {
     if !keys.just_released(KeyCode::Space) {
         return;
@@ -85,8 +85,8 @@ fn update_capture_progress(mut tiles: Query<&mut HexTile>, units: Query<&Unit>) 
         .iter()
         .filter_map(|hex_tile| {
             let Some(unit) = units.iter().find(|u| u.position == hex_tile.coordinate) else {
-            return None;
-        };
+                return None;
+            };
 
             if unit.team == hex_tile.team {
                 return None;

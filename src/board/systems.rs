@@ -4,36 +4,37 @@ use hexx::Hex;
 use super::{
     components::{Border, HexTile, Team, TileVariant},
     resources::HexColors,
-    BACKGROUND_HEX_SIZE, HEX_GAP, HEX_RADIUS, HEX_SIZE, HEX_LAYOUT,
+    BACKGROUND_HEX_LAYER, BACKGROUND_HEX_SIZE, BORDER_LAYER, HEX_GAP, HEX_LAYER, HEX_LAYOUT,
+    HEX_RADIUS, HEX_SIZE,
 };
 
 pub fn load_colors(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
     commands.insert_resource(HexColors {
-        backround_hex: materials.add(ColorMaterial::from(Color::rgb_u8(25, 25, 25))),
+        backround_hex: materials.add(ColorMaterial::from(Color::srgb_u8(25, 25, 25))),
 
-        neutral: materials.add(ColorMaterial::from(Color::rgb_u8(40, 40, 40))),
-        neutral_weak_highlight: materials.add(ColorMaterial::from(Color::rgb_u8(60, 60, 60))),
-        neutral_strong_highlight: materials.add(ColorMaterial::from(Color::rgb_u8(90, 90, 90))),
+        neutral: materials.add(ColorMaterial::from(Color::srgb_u8(40, 40, 40))),
+        neutral_weak_highlight: materials.add(ColorMaterial::from(Color::srgb_u8(60, 60, 60))),
+        neutral_strong_highlight: materials.add(ColorMaterial::from(Color::srgb_u8(90, 90, 90))),
 
-        ally_sprite: Color::rgb_u8(70, 130, 250),
-        ally_unused_action_color: Color::rgb_u8(100, 150, 250),
-        ally_used_action_color: Color::rgba_u8(100, 150, 250, 50),
-        ally_border_color: materials.add(ColorMaterial::from(Color::rgba_u8(70, 130, 250, 100))),
-        ally_capital: materials.add(ColorMaterial::from(Color::rgb_u8(70, 70, 200))),
+        ally_sprite: Color::srgb_u8(70, 130, 250),
+        ally_unused_action_color: Color::srgb_u8(100, 150, 250),
+        ally_used_action_color: Color::srgba_u8(100, 150, 250, 50),
+        ally_border_color: materials.add(ColorMaterial::from(Color::srgba_u8(70, 130, 250, 100))),
+        ally_capital: materials.add(ColorMaterial::from(Color::srgb_u8(70, 70, 200))),
         ally_capital_weak_highlight: materials
-            .add(ColorMaterial::from(Color::rgb_u8(100, 100, 240))),
+            .add(ColorMaterial::from(Color::srgb_u8(100, 100, 240))),
         ally_capital_strong_highlight: materials
-            .add(ColorMaterial::from(Color::rgb_u8(150, 150, 255))),
+            .add(ColorMaterial::from(Color::srgb_u8(150, 150, 255))),
 
-        enemy_sprite: Color::rgb_u8(250, 130, 70),
-        enemy_unused_action_color: Color::rgb_u8(250, 150, 100),
-        enemy_used_action_color: Color::rgba_u8(250, 150, 100, 50),
-        enemy_border_color: materials.add(ColorMaterial::from(Color::rgba_u8(200, 70, 70, 100))),
-        enemy_capital: materials.add(ColorMaterial::from(Color::rgb_u8(200, 70, 70))),
+        enemy_sprite: Color::srgb_u8(250, 130, 70),
+        enemy_unused_action_color: Color::srgb_u8(250, 150, 100),
+        enemy_used_action_color: Color::srgba_u8(250, 150, 100, 50),
+        enemy_border_color: materials.add(ColorMaterial::from(Color::srgba_u8(200, 70, 70, 100))),
+        enemy_capital: materials.add(ColorMaterial::from(Color::srgb_u8(200, 70, 70))),
         enemy_capital_weak_highlight: materials
-            .add(ColorMaterial::from(Color::rgb_u8(240, 100, 100))),
+            .add(ColorMaterial::from(Color::srgb_u8(240, 100, 100))),
         enemy_capital_strong_highlight: materials
-            .add(ColorMaterial::from(Color::rgb_u8(255, 150, 150))),
+            .add(ColorMaterial::from(Color::srgb_u8(255, 150, 150))),
     });
 }
 
@@ -43,17 +44,19 @@ pub fn build_board(
     colors: Res<HexColors>,
 ) {
     let mut pointy_top_hex_mesh = MaterialMesh2dBundle {
-        mesh: meshes
-            .add(shape::RegularPolygon::new(HEX_SIZE, 6).into())
-            .into(),
+        mesh: meshes.add(RegularPolygon::new(HEX_SIZE, 6)).into(),
         material: colors.neutral.clone(),
         ..default()
     };
 
     let hex_coords = Hex::ZERO.range(HEX_RADIUS as u32);
     for coord in hex_coords {
-        // https://www.redblobgames.com/grids/hexagons/#hex-to-pixel
-        pointy_top_hex_mesh.transform.translation = HEX_LAYOUT.hex_to_world_pos(coord).extend(1.);
+        pointy_top_hex_mesh.transform.translation = Vec3::from_array(
+            HEX_LAYOUT
+                .hex_to_world_pos(coord)
+                .extend(HEX_LAYER)
+                .to_array(),
+        );
 
         commands.spawn(pointy_top_hex_mesh.clone()).insert(HexTile {
             coordinate: coord,
@@ -68,12 +71,14 @@ pub fn build_board(
             + HEX_SIZE * (2. * HEX_RADIUS as f32 + BACKGROUND_HEX_SIZE));
 
     let flat_top_hex_mesh = MaterialMesh2dBundle {
-        mesh: meshes
-            .add(shape::RegularPolygon::new(scale, 6).into())
-            .into(),
+        mesh: meshes.add(RegularPolygon::new(scale, 6)).into(),
         material: colors.backround_hex.clone(),
-        transform: Transform::from_rotation(Quat::from_rotation_z(30_f32.to_radians())),
-        ..default()
+        transform: Transform {
+            translation: Vec3::new(0., 0., BACKGROUND_HEX_LAYER),
+            rotation: Quat::from_rotation_z(30_f32.to_radians()),
+            scale: Vec3::splat(1.),
+        },
+        ..Default::default()
     };
 
     commands.spawn(flat_top_hex_mesh);
@@ -106,7 +111,7 @@ pub fn draw_borders(
 
     let mut border = MaterialMesh2dBundle {
         mesh: meshes
-            .add(shape::Quad::new(Vec2::new(first.distance(second), HEX_GAP * 2.)).into())
+            .add(Rectangle::new(first.distance(second), HEX_GAP * 2.))
             .into(),
         material: colors.ally_border_color.clone(),
         ..default()
@@ -118,7 +123,7 @@ pub fn draw_borders(
                 translation: Vec3::new(
                     (positions[0].x + positions[1].x) / 2.,
                     (positions[0].y + positions[1].y) / 2.,
-                    2.,
+                    BORDER_LAYER,
                 ),
                 rotation: Quat::from_axis_angle(
                     Vec3::Z,
@@ -143,7 +148,7 @@ pub fn draw_borders(
                 translation: Vec3::new(
                     (positions[0].x + positions[1].x) / 2.,
                     (positions[0].y + positions[1].y) / 2.,
-                    2.,
+                    BORDER_LAYER,
                 ),
                 rotation: Quat::from_axis_angle(
                     Vec3::Z,
@@ -171,7 +176,6 @@ fn tile_border(hexes: &Query<&HexTile>, team: Team) -> Option<Vec<Vec<Vec2>>> {
         .flat_map(|h| {
             let neighbor_coords = h.coordinate.all_neighbors();
             let hex_pixel_pos = HEX_LAYOUT.hex_to_world_pos(h.coordinate);
-
             [
                 neighbor_coords
                     .iter()
